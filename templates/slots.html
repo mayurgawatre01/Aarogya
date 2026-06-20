@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VitaCure - Doctor Slots</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .page-wrap { max-width: 900px; margin: 0 auto; padding: 30px 20px; }
+        .section-title { font-size: 22px; font-weight: 700; color: #0a1931; margin-bottom: 20px; }
+        .card { background: white; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); padding: 24px; margin-bottom: 24px; }
+        .doctors-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 30px; }
+        .doctor-card {
+            border: 2px solid #e0f0f0;
+            border-radius: 12px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+        .doctor-card:hover, .doctor-card.selected {
+            border-color: #008080;
+            background: #f0fafa;
+        }
+        .doctor-name { font-size: 15px; font-weight: 700; color: #0a1931; }
+        .doctor-spec { font-size: 13px; color: #008080; margin-top: 3px; }
+        .doctor-avail { font-size: 12px; color: #777; margin-top: 6px; }
+        .avail-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+        .dot-green { background: #2ecc71; }
+        .dot-red   { background: #e74c3c; }
+        .dot-orange{ background: #f39c12; }
+
+        /* Slots grid */
+        .slots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 16px; }
+        .slot {
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.15s;
+        }
+        .slot-free     { background: #e0f5e0; color: #1e7e34; border-color: #b0e0b0; }
+        .slot-free:hover { background: #2ecc71; color: white; }
+        .slot-busy     { background: #ffe0e0; color: #c0392b; cursor: not-allowed; opacity: 0.7; }
+        .slot-selected { background: #008080; color: white; border-color: #006666; }
+
+        .date-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .date-tab {
+            padding: 7px 16px; border-radius: 20px; font-size: 13px; cursor: pointer;
+            border: 1px solid #c0e0e0; background: white; color: #555;
+        }
+        .date-tab.active { background: #008080; color: white; border-color: #008080; }
+
+        .book-slot-btn {
+            background: linear-gradient(135deg, #008080, #0a1931);
+            color: white; border: none; padding: 12px 28px;
+            border-radius: 25px; font-size: 15px; cursor: pointer;
+            margin-top: 20px; display: none;
+        }
+        .book-slot-btn.show { display: inline-block; }
+        .book-slot-btn:hover { opacity: 0.88; }
+
+        .legend { display: flex; gap: 16px; margin-bottom: 16px; font-size: 13px; }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+        .no-select { text-align: center; padding: 40px; color: #aaa; font-size: 14px; }
+    </style>
+</head>
+<body>
+<nav>
+    <h1>VitaCure</h1>
+    <div>
+        <a href="/patient">Dashboard</a>
+        <a href="/booking">Book Appointment</a>
+        <a href="/logout">Logout</a>
+        <button class="dark-toggle" onclick="toggleDark()">🌙 Dark</button>
+    </div>
+</nav>
+
+<div class="page-wrap">
+    <div class="section-title">🩺 Doctor Availability Slots</div>
+    <p style="color:#666;margin-bottom:24px;font-size:14px;">Select a doctor to see their available time slots for the next 3 days.</p>
+
+    <!-- Doctor Cards -->
+    <div class="doctors-grid" id="doctorGrid"></div>
+
+    <!-- Slot Viewer -->
+    <div class="card" id="slotCard" style="display:none;">
+        <div id="selectedDoctorName" style="font-size:17px;font-weight:700;color:#0a1931;margin-bottom:14px;"></div>
+
+        <!-- Date Tabs -->
+        <div class="date-tabs" id="dateTabs"></div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#e0f5e0;border:1px solid #b0e0b0;"></div> Available</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ffe0e0;"></div> Booked</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#008080;"></div> Selected</div>
+        </div>
+
+        <!-- Slots -->
+        <div class="slots-grid" id="slotsGrid"></div>
+
+        <button class="book-slot-btn" id="bookSlotBtn" onclick="bookSelectedSlot()">
+            📅 Book This Slot
+        </button>
+        <p id="bookMsg" style="margin-top:12px;font-size:14px;color:#008080;font-weight:600;"></p>
+    </div>
+</div>
+
+<footer><p>© 2026 VitaCure. All rights reserved.</p></footer>
+
+<script>
+function toggleDark() {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('dark', document.body.classList.contains('dark-mode'));
+}
+if (localStorage.getItem('dark') === 'true') document.body.classList.add('dark-mode');
+
+const DOCTORS = [
+    { id: 1, name: 'Dr. Sharma', spec: 'Cardiologist',       hours: '9AM–5PM', status: 'available' },
+    { id: 2, name: 'Dr. Mehta',  spec: 'Dermatologist',      hours: '10AM–6PM',status: 'available' },
+    { id: 3, name: 'Dr. Patel',  spec: 'Neurologist',        hours: '9AM–3PM', status: 'busy'      },
+    { id: 4, name: 'Dr. Rao',    spec: 'General Physician',  hours: '8AM–6PM', status: 'available' },
+    { id: 5, name: 'Dr. Joshi',  spec: 'Orthopedic',         hours: '11AM–5PM',status: 'available' },
+];
+
+// Simulate booked slots from localStorage
+function getBooked() { return JSON.parse(localStorage.getItem('vc_booked_slots') || '{}'); }
+function addBooked(key) {
+    const b = getBooked(); b[key] = true;
+    localStorage.setItem('vc_booked_slots', JSON.stringify(b));
+}
+
+const TIME_SLOTS = ['9:00','9:30','10:00','10:30','11:00','11:30','12:00','12:30',
+                    '14:00','14:30','15:00','15:30','16:00','16:30','17:00'];
+
+let selectedDoctor = null;
+let selectedDate   = null;
+let selectedSlot   = null;
+
+// Render doctor grid
+function renderDoctors() {
+    const grid = document.getElementById('doctorGrid');
+    grid.innerHTML = DOCTORS.map(d => `
+        <div class="doctor-card ${selectedDoctor?.id === d.id ? 'selected':''}" onclick="selectDoctor(${d.id})">
+            <div class="doctor-name">👨‍⚕️ ${d.name}</div>
+            <div class="doctor-spec">${d.spec}</div>
+            <div class="doctor-avail">
+                <span class="avail-dot ${d.status==='available'?'dot-green':d.status==='busy'?'dot-red':'dot-orange'}"></span>
+                ${d.status === 'available' ? 'Available today' : d.status === 'busy' ? 'Fully booked today' : 'Limited slots'}
+                &nbsp;·&nbsp; ${d.hours}
+            </div>
+        </div>
+    `).join('');
+}
+
+function selectDoctor(id) {
+    selectedDoctor = DOCTORS.find(d => d.id === id);
+    selectedSlot   = null;
+    renderDoctors();
+    renderDateTabs();
+    document.getElementById('slotCard').style.display = 'block';
+    document.getElementById('selectedDoctorName').textContent = `🩺 ${selectedDoctor.name} — ${selectedDoctor.spec}`;
+    document.getElementById('bookMsg').textContent = '';
+    document.getElementById('bookSlotBtn').classList.remove('show');
+}
+
+// Date tabs — today, tomorrow, day after
+function renderDateTabs() {
+    const tabs = document.getElementById('dateTabs');
+    const dates = [0,1,2].map(n => {
+        const d = new Date(); d.setDate(d.getDate() + n);
+        return d;
+    });
+    if (!selectedDate) selectedDate = dates[0].toDateString();
+    tabs.innerHTML = dates.map(d => `
+        <div class="date-tab ${d.toDateString()===selectedDate?'active':''}"
+             onclick="selectDate('${d.toDateString()}')">
+            ${d.toDateString() === new Date().toDateString() ? 'Today' :
+              d.toDateString() === new Date(Date.now()+86400000).toDateString() ? 'Tomorrow' :
+              d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})}
+        </div>
+    `).join('');
+    renderSlots();
+}
+
+function selectDate(dateStr) {
+    selectedDate = dateStr;
+    selectedSlot = null;
+    document.getElementById('bookSlotBtn').classList.remove('show');
+    renderDateTabs();
+}
+
+function renderSlots() {
+    const grid   = document.getElementById('slotsGrid');
+    const booked = getBooked();
+    grid.innerHTML = TIME_SLOTS.map(t => {
+        const key     = `${selectedDoctor.id}_${selectedDate}_${t}`;
+        const isBooked= !!booked[key] || (selectedDoctor.status==='busy' && Math.random()<0.6);
+        const isSel   = selectedSlot === t;
+        return `<div class="slot ${isSel?'slot-selected':isBooked?'slot-busy':'slot-free'}"
+                     onclick="${isBooked?'':` selectSlot('${t}')`}">
+                    ${t}${parseInt(t)<12?'AM':'PM'}
+                    ${isBooked?'<br><span style="font-size:10px">Booked</span>':''}
+                </div>`;
+    }).join('');
+}
+
+function selectSlot(time) {
+    selectedSlot = time;
+    document.getElementById('bookSlotBtn').classList.add('show');
+    document.getElementById('bookMsg').textContent = '';
+    renderSlots();
+}
+
+function bookSelectedSlot() {
+    if (!selectedDoctor || !selectedDate || !selectedSlot) return;
+    const key = `${selectedDoctor.id}_${selectedDate}_${selectedSlot}`;
+    addBooked(key);
+    document.getElementById('bookMsg').textContent =
+        `✅ Slot booked with ${selectedDoctor.name} on ${selectedDate} at ${selectedSlot}!`;
+    document.getElementById('bookSlotBtn').classList.remove('show');
+    selectedSlot = null;
+    renderSlots();
+}
+
+renderDoctors();
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VitaCure - AI Check History</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav>
+    <h1>VitaCure</h1>
+    <div>
+        <a href="/patient">Dashboard</a>
+        <a href="/symptom_checker">Symptom Checker</a>
+        <a href="/history">History</a>
+        <button class="dark-toggle" onclick="toggleDark()">🌙 Dark</button>
+        <a href="/logout">Logout</a>
+
+    </div>
+</nav>
+
+<div class="dashboard">
+
+    <div class="dashboard-header">
+        <div>
+            <h2>📋 AI Check History</h2>
+            <p>Your past symptom analysis records.</p>
+        </div>
+        <a href="/symptom_checker" class="btn-primary" style="text-decoration: none; padding: 12px 28px; border-radius: 10px; background: var(--teal-light); color: white; font-weight: 600;">+ New Check</a>
+    </div>
+
+    {% if records %}
+        {% for record in records %}
+        <div class="appointment-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span style="background: #e0f5f5; color: var(--teal); padding: 4px 12px; border-radius: 20px; font-size: 13px;">🕐 {{ record[3] }}</span>
+                <a href="/download_report/{{ record[0] }}" style="background: var(--teal); color: white; padding: 6px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600;">⬇ Download PDF</a>
+            </div>
+            <p><strong>🤒 Symptoms:</strong> {{ record[1] }}</p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 10px 0;">
+            <p><strong>🤖 AI Analysis:</strong></p>
+            <pre style="white-space: pre-wrap; font-family: inherit; color: #444; margin-top: 8px;">{{ record[2] }}</pre>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="appointment-card" style="text-align: center; padding: 50px;">
+            <div style="font-size: 52px; margin-bottom: 15px;">📭</div>
+            <p style="font-size: 18px; color: #777;">No history yet.</p>
+            <a href="/symptom_checker" class="btn-primary" style="margin-top: 20px; display: inline-block; text-decoration: none; padding: 12px 28px; border-radius: 10px; background: var(--teal-light); color: white; font-weight: 600;">Start First Check</a>
+        </div>
+    {% endif %}
+
+</div>
+<script>
+function toggleDark() {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('dark', document.body.classList.contains('dark-mode'));
+}
+if (localStorage.getItem('dark') === 'true') document.body.classList.add('dark-mode');
+</script>
+<footer>
+    <p>© 2026 VitaCure. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

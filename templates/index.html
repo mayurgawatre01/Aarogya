@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VitaCure - Your Health, Our Priority</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav>
+    <h1>VitaCure</h1>
+    <div>
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
+        <button class="dark-toggle" onclick="toggleDark()">🌙 Dark</button>
+    </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+    <h2>Your Health, <span>Our Priority</span></h2>
+    <p>Book appointments with top doctors instantly. Fast, easy, and secure healthcare at your fingertips.</p>
+    <div class="hero-btns">
+        <a href="/register" class="btn-primary">Get Started Free</a>
+        <a href="/login" class="btn-outline">Login to Dashboard</a>
+    </div>
+</div>
+
+<!-- FEATURES -->
+<div class="features">
+    <h3>Why Choose VitaCure?</h3>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">🩺</div>
+            <h4>Top Doctors</h4>
+            <p>Access verified specialists across cardiology, dermatology, neurology and more.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📅</div>
+            <h4>Easy Booking</h4>
+            <p>Book appointments in under 2 minutes — anytime, anywhere, from any device.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🔒</div>
+            <h4>Secure & Private</h4>
+            <p>Your health data is encrypted and protected with industry-standard security.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🤖</div>
+            <h4>AI Symptom Check</h4>
+            <p>Get instant AI-powered insights about your symptoms before your appointment.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📋</div>
+            <h4>Health Records</h4>
+            <p>All your appointments and medical history in one place, always accessible.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h4>Instant Confirmation</h4>
+            <p>Get real-time booking confirmation and reminders for your appointments.</p>
+        </div>
+    </div>
+</div>
+
+<!-- STATS -->
+<div style="background: var(--navy); padding: 60px 50px; text-align: center;">
+    <div style="display: flex; justify-content: center; gap: 80px; flex-wrap: wrap;">
+        <div style="color: white;">
+            <div style="font-size: 48px; font-weight: 800; color: var(--teal-light);">500+</div>
+            <div style="font-size: 16px; color: #aaa; margin-top: 8px;">Doctors Available</div>
+        </div>
+        <div style="color: white;">
+            <div style="font-size: 48px; font-weight: 800; color: var(--teal-light);">10K+</div>
+            <div style="font-size: 16px; color: #aaa; margin-top: 8px;">Happy Patients</div>
+        </div>
+        <div style="color: white;">
+            <div style="font-size: 48px; font-weight: 800; color: var(--teal-light);">98%</div>
+            <div style="font-size: 16px; color: #aaa; margin-top: 8px;">Satisfaction Rate</div>
+        </div>
+        <div style="color: white;">
+            <div style="font-size: 48px; font-weight: 800; color: var(--teal-light);">24/7</div>
+            <div style="font-size: 16px; color: #aaa; margin-top: 8px;">Support Available</div>
+        </div>
+    </div>
+</div>
+<script>
+function toggleDark() {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('dark', document.body.classList.contains('dark-mode'));
+}
+if (localStorage.getItem('dark') === 'true') document.body.classList.add('dark-mode');
+</script>
+<footer>
+    <p>© 2026 VitaCure. All rights reserved. | Made with ❤️ for better healthcare.</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VitaCure - Patient Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav>
+    <h1>VitaCure</h1>
+    <div>
+        <a href="/">Home</a>
+        <a href="/booking">Book Appointment</a>
+        <a href="/doctor">Doctors</a>
+        <a href="/history">History</a>
+        <a href="/health_dashboard">Health Dashboard</a>
+        <a href="/symptom_checker">Symptom Checker</a>
+        <a href="/reminders">Reminders</a>
+        <a href="/slots">Slots</a>
+        <a href="/chat">Chat</a>
+        <a href="/logout">Logout</a>
+    </div>
+</nav>
+
+<div class="dashboard">
+
+    <!-- HEADER CARD -->
+    <div class="dashboard-header">
+        <div>
+            <h2>👋 Welcome, {{ name }}!</h2>
+            <p>Manage your appointments and health records here.</p>
+        </div>
+        <a href="/booking" class="btn-primary" style="text-decoration: none; padding: 12px 28px; border-radius: 10px; background: var(--teal-light); color: white; font-weight: 600;">+ New Appointment</a>
+    </div>
+
+    <!-- STATS ROW -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 35px;">
+        <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.07); text-align: center; border-top: 4px solid var(--teal);">
+            <div style="font-size: 36px; font-weight: 800; color: var(--teal);">{{ appointments|length }}</div>
+            <div style="font-size: 14px; color: #777; margin-top: 5px;">Total Appointments</div>
+        </div>
+        <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.07); text-align: center; border-top: 4px solid #0a1931;">
+            <div style="font-size: 36px; font-weight: 800; color: #0a1931;">🩺</div>
+            <div style="font-size: 14px; color: #777; margin-top: 5px;">Verified Doctors</div>
+        </div>
+        <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.07); text-align: center; border-top: 4px solid #00b3b3;">
+            <div style="font-size: 36px; font-weight: 800; color: #00b3b3;">24/7</div>
+            <div style="font-size: 14px; color: #777; margin-top: 5px;">Support Available</div>
+        </div>
+    </div>
+
+    <!-- APPOINTMENTS -->
+    <h3>📋 Your Appointments</h3>
+
+    {% if appointments %}
+        {% for appt in appointments %}
+        <div class="appointment-card">
+            <div>
+                <p><strong>🩺 Doctor:</strong> {{ appt[2] }}</p>
+                <p><strong>📅 Date:</strong> {{ appt[3] }} &nbsp; <strong>⏰ Time:</strong> {{ appt[4] }}</p>
+                <p><strong>📝 Symptoms:</strong> {{ appt[5] }}</p>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-end;">
+                <span style="background: #e0f5e0; color: #1e7e34; padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;">✅ Confirmed</span>
+                <form method="POST" action="/cancel/{{ appt[0] }}">
+                    <button type="submit" class="cancel-btn">Cancel</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="appointment-card" style="text-align: center; padding: 50px;">
+            <div style="font-size: 52px; margin-bottom: 15px;">📭</div>
+            <p style="font-size: 18px; color: #777;">No appointments yet.</p>
+            <a href="/booking" class="btn" style="margin-top: 20px; display: inline-block;">Book Your First Appointment</a>
+        </div>
+    {% endif %}
+
+</div>
+
+<footer>
+    <p>© 2026 VitaCure. All rights reserved.</p>
+</footer>
+
+<script src="{{ url_for('static', filename='js/patient.js') }}"></script>
+</body>
+</html>

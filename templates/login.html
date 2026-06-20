@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VitaCure - Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav>
+    <h1>VitaCure</h1>
+    <div>
+        <a href="/">Home</a>
+        <a href="/register">Register</a>
+        <button class="dark-toggle" onclick="toggleDark()">🌙 Dark</button>
+    </div>
+</nav>
+
+<div style="min-height: 90vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0a1931 0%, #0d3b5e 50%, #008080 100%);">
+    <div class="form-container">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div style="font-size: 52px; margin-bottom: 10px;">🏥</div>
+            <h2>Welcome Back</h2>
+            <p class="form-subtitle">Login to manage your appointments</p>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-error">⚠️ {{ messages[0] }}</div>
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="/login">
+            <input type="email" id="email" name="email" placeholder="📧 Enter your email" required>
+            <p class="field-msg" id="email-msg"></p>
+
+            <input type="password" id="password" name="password" placeholder="🔒 Enter your password" required>
+            <p class="field-msg" id="pass-msg"></p>
+
+            <button type="submit" id="login-btn" disabled>Login to VitaCure</button>
+        </form>
+
+        <div class="form-footer">
+            Don't have an account? <a href="/register">Register here</a>
+        </div>
+
+        <div style="margin-top: 30px; padding-top: 25px; border-top: 1px solid #eee;">
+            <p style="font-size: 13px; color: #999; margin-bottom: 12px;">Quick Demo Login</p>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="fillDemo('patient')" style="flex:1; padding: 10px; background: #e8f5f5; color: var(--teal); border: 1px solid var(--teal); border-radius: 8px; cursor: pointer; font-size: 13px;">👤 Patient Demo</button>
+                <button onclick="fillDemo('doctor')" style="flex:1; padding: 10px; background: #e8f5f5; color: var(--teal); border: 1px solid var(--teal); border-radius: 8px; cursor: pointer; font-size: 13px;">🩺 Doctor Demo</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>© 2026 VitaCure. All rights reserved.</p>
+</footer>
+<script>
+function toggleDark() {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('dark', document.body.classList.contains('dark-mode'));
+}
+if (localStorage.getItem('dark') === 'true') document.body.classList.add('dark-mode');
+</script>
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+<script>
+function fillDemo(role) {
+    document.getElementById('email').value = role === 'patient' ? 'patient@demo.com' : 'doctor@demo.com';
+    document.getElementById('password').value = 'Demo1234';
+    document.getElementById('email').dispatchEvent(new Event('input'));
+    document.getElementById('password').dispatchEvent(new Event('input'));
+}
+</script>
+</body>
+</html>

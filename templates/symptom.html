@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VitaCure - AI Symptom Checker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<nav>
+    <h1>VitaCure</h1>
+    <div>
+        <a href="/patient">Dashboard</a>
+        <a href="/logout">Logout</a>
+        <button class="dark-toggle" onclick="toggleDark()">🌙 Dark</button>
+    </div>
+</nav>
+
+<div style="min-height:90vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#0a1931,#0d3b5e,#008080); padding:40px 20px;">
+    <div class="form-container" style="max-width:540px;">
+        <div style="text-align:center; margin-bottom:30px;">
+            <div style="font-size:52px;">🤖</div>
+            <h2>AI Symptom Checker</h2>
+            <p class="form-subtitle">Describe your symptoms — AI will analyze instantly</p>
+        </div>
+
+        <textarea id="symptoms" placeholder="e.g. I have headache, fever and body pain since 2 days..." style="width:100%; padding:14px; border:2px solid #e0e0e0; border-radius:10px; font-size:15px; min-height:120px; outline:none; resize:vertical; margin-bottom:10px;"></textarea>
+
+        <button onclick="analyzeSymptoms()" id="analyze-btn" style="width:100%; padding:14px; background:#008080; color:white; border:none; border-radius:10px; font-size:16px; font-weight:600; cursor:pointer; margin-bottom:20px;">🔍 Analyze Symptoms</button>
+
+        <div id="result" style="display:none; background:#f0fafa; border-radius:12px; padding:20px; border-left:4px solid #008080;">
+            <div id="result-content"></div>
+        </div>
+
+        <div id="loading" style="display:none; text-align:center; padding:20px;">
+            <div style="font-size:32px;">⏳</div>
+            <p style="color:#008080; font-weight:600;">AI is analyzing your symptoms...</p>
+        </div>
+
+        <div style="margin-top:20px; text-align:center;">
+            <a href="/booking" style="background:#0a1931; color:white; padding:12px 28px; border-radius:10px; text-decoration:none; font-size:15px; font-weight:600;">📅 Book Appointment</a>
+        </div>
+    </div>
+</div>
+
+<footer><p>© 2026 VitaCure. All rights reserved.</p></footer>
+
+<script>
+function toggleDark() {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('dark', document.body.classList.contains('dark-mode'));
+}
+if (localStorage.getItem('dark') === 'true') document.body.classList.add('dark-mode');
+
+async function analyzeSymptoms() {
+    const symptoms = document.getElementById('symptoms').value.trim();
+    if (symptoms.length < 10) {
+        alert('Please describe your symptoms in detail!');
+        return;
+    }
+
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('analyze-btn').disabled = true;
+
+    try {
+        const response = await fetch('/ai_symptom', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ symptoms: symptoms })
+        });
+        const data = await response.json();
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('result').style.display = 'block';
+        document.getElementById('result-content').innerHTML = data.result.replace(/\n/g, '<br>');
+    } catch (err) {
+        document.getElementById('loading').style.display = 'none';
+        alert('Error connecting to AI. Try again!');
+    }
+    document.getElementById('analyze-btn').disabled = false;
+}
+</script>
+</body>
+</html>

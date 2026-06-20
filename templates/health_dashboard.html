@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VitaCure - Health Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .page-wrap { max-width: 960px; margin: 0 auto; padding: 30px 20px; }
+        .section-title { font-size: 21px; font-weight: 700; color: #0a1931; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+        .card { background: white; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.07); padding: 24px; margin-bottom: 28px; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 28px; border-bottom: 2px solid #e8f5f5; padding-bottom: 0; }
+        .tab-btn { padding: 10px 22px; font-size: 14px; font-weight: 600; border: none; background: none; cursor: pointer; color: #777; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
+        .tab-btn.active { color: #008080; border-bottom-color: #008080; }
+        .health-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-bottom: 24px; }
+        .health-stat { background: white; border-radius: 12px; padding: 18px; text-align: center; box-shadow: 0 3px 12px rgba(0,0,0,0.06); }
+        .health-stat .val { font-size: 28px; font-weight: 800; }
+        .health-stat .lbl { font-size: 12px; color: #777; margin-top: 4px; }
+        .health-stat .sub { font-size: 11px; margin-top: 2px; }
+        .color-teal   { color: #008080; }
+        .color-red    { color: #e74c3c; }
+        .color-orange { color: #e67e22; }
+        .color-blue   { color: #2980b9; }
+        .color-green  { color: #27ae60; }
+        .timeline { position: relative; padding-left: 24px; }
+        .timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: #e0f0f0; }
+        .tl-item { position: relative; margin-bottom: 20px; }
+        .tl-dot { position: absolute; left: -20px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: #008080; border: 2px solid white; box-shadow: 0 0 0 2px #008080; }
+        .tl-date { font-size: 11px; color: #aaa; margin-bottom: 3px; }
+        .tl-content { background: #f8fffe; border: 1px solid #e0f0f0; border-radius: 8px; padding: 10px 14px; }
+        .tl-title { font-size: 14px; font-weight: 600; color: #0a1931; }
+        .tl-sub   { font-size: 13px; color: #666; margin-top: 3px; }
+        .vitals-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+        .vitals-form input { width: 100%; padding: 9px 12px; border: 1px solid #c0e0e0; border-radius: 8px; font-size: 14px; background: #f8fffe; color: #333; box-sizing: border-box; }
+        .vitals-form input:focus { outline: none; border-color: #008080; }
+        .vitals-form label { font-size: 12px; color: #666; display: block; margin-bottom: 4px; }
+        .save-btn { background: linear-gradient(135deg, #008080, #0a1931); color: white; border: none; padding: 10px 24px; border-radius: 20px; font-size: 14px; cursor: pointer; }
+        .save-btn:hover { opacity: 0.88; }
+        .vitals-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .vitals-table th { background: #f0fafa; color: #008080; padding: 10px 12px; text-align: left; font-weight: 600; }
+        .vitals-table td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; color: #444; }
+        .vitals-table tr:last-child td { border-bottom: none; }
+        .normal  { color: #27ae60; font-weight: 600; }
+        .warning { color: #e67e22; font-weight: 600; }
+        .danger  { color: #e74c3c; font-weight: 600; }
+        .search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+        .search-bar input { flex: 1; padding: 10px 16px; border: 1px solid #c0e0e0; border-radius: 20px; font-size: 14px; background: #f8fffe; outline: none; }
+        .search-bar input:focus { border-color: #008080; }
+        .search-btn { padding: 10px 20px; background: #008080; color: white; border: none; border-radius: 20px; font-size: 14px; cursor: pointer; }
+        .search-btn:hover { background: #006666; }
+        .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+        .filter-chip { padding: 5px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 1px solid #c0e0e0; background: white; color: #555; transition: all 0.15s; }
+        .filter-chip.active { background: #008080; color: white; border-color: #008080; }
+        .hospital-list { display: flex; flex-direction: column; gap: 12px; }
+        .hospital-card { border: 1px solid #e0f0f0; border-radius: 12px; padding: 16px 18px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; background: #fafffe; }
+        .hospital-card:hover { border-color: #008080; background: #f0fafa; }
+        .h-name  { font-size: 15px; font-weight: 700; color: #0a1931; }
+        .h-type  { font-size: 12px; color: #008080; font-weight: 600; margin-top: 2px; }
+        .h-meta  { font-size: 13px; color: #666; margin-top: 5px; }
+        .h-dist  { font-size: 13px; font-weight: 700; color: #008080; white-space: nowrap; }
+        .h-open  { font-size: 12px; padding: 3px 10px; border-radius: 12px; font-weight: 600; }
+        .open-yes { background: #e0f5e0; color: #1e7e34; }
+        .open-no  { background: #ffe0e0; color: #c0392b; }
+        .call-btn { background: #0a1931; color: white; border: none; padding: 7px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-block; margin-top: 8px; }
+        .call-btn:hover { background: #008080; }
+        .locating-msg { text-align: center; padding: 30px; color: #aaa; font-size: 14px; }
+        .emergency-banner { background: linear-gradient(135deg, #c0392b, #e74c3c); color: white; padding: 14px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .emer-text { font-size: 14px; font-weight: 600; }
+        .emer-num  { font-size: 22px; font-weight: 800; letter-spacing: 1px; }
+        .empty-msg { text-align: center; padding: 40px; color: #aaa; font-size: 14px; }
+        .ai-insight { background: #f0fafa; border-left: 3px solid #008080; padding: 12px 16px; border-radius: 0 8px 8px 0; font-size: 13px; color: #444; line-height: 1.6; margin-top: 16px; }
+        .insight-btn { background: none; border: 1px solid #008080; color: #008080; padding: 7px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; margin-top: 12px; }
+        .insight-btn:hover { background: #e0f5f5; }
+    </style>
+</head>
+<body>
+<nav>
+    <h1>VitaCure</h1>
+    <div>
+        <a href="/patient">Dashboard</a>
+        <a href="/health_dashboard">📊 Health</a>
+        <a href="/logout">Logout</a>
+        <button class="dark-toggle" onclick="toggleDark()">🌙 Dark</button>
+    </div>
+</nav>
+
+<div class="page-wrap">
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('dashboard')">📊 Health Dashboard</button>
+        <button class="tab-btn" onclick="showTab('hospitals')">🏥 Nearby Hospitals</button>
+    </div>
+
+    <!-- HEALTH DASHBOARD TAB -->
+    <div id="tab-dashboard">
+        <div class="health-grid">
+            <div class="health-stat">
+                <div class="val color-teal" id="statAppts">—</div>
+                <div class="lbl">Appointments</div>
+                <div class="sub color-teal">Total</div>
+            </div>
+            <div class="health-stat">
+                <div class="val color-red" id="statBP">—</div>
+                <div class="lbl">Blood Pressure</div>
+                <div class="sub" id="bpStatus">Not recorded</div>
+            </div>
+            <div class="health-stat">
+                <div class="val color-orange" id="statWeight">—</div>
+                <div class="lbl">Weight (kg)</div>
+                <div class="sub" id="wtStatus">Not recorded</div>
+            </div>
+            <div class="health-stat">
+                <div class="val color-blue" id="statSugar">—</div>
+                <div class="lbl">Blood Sugar</div>
+                <div class="sub" id="sugarStatus">Not recorded</div>
+            </div>
+            <div class="health-stat">
+                <div class="val color-green" id="statMeds">—</div>
+                <div class="lbl">Medicines</div>
+                <div class="sub">Tracked today</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">📝 Log Today's Vitals</div>
+            <div class="vitals-form">
+                <div><label>Blood Pressure (mmHg)</label><input type="text" id="v-bp" placeholder="e.g. 120/80"></div>
+                <div><label>Weight (kg)</label><input type="number" id="v-weight" placeholder="e.g. 70"></div>
+                <div><label>Blood Sugar (mg/dL)</label><input type="number" id="v-sugar" placeholder="e.g. 95"></div>
+                <div><label>Heart Rate (bpm)</label><input type="number" id="v-heart" placeholder="e.g. 72"></div>
+                <div><label>Temperature (°C)</label><input type="number" id="v-temp" placeholder="e.g. 37.0" step="0.1"></div>
+                <div><label>SpO2 (%)</label><input type="number" id="v-spo2" placeholder="e.g. 98"></div>
+            </div>
+            <button class="save-btn" onclick="saveVitals()">💾 Save Vitals</button>
+            <span id="saveMsg" style="margin-left:12px;font-size:13px;color:#008080;font-weight:600;"></span>
+            <br>
+            <button class="insight-btn" onclick="getAIInsight()">✨ Get AI Health Insight</button>
+            <div class="ai-insight" id="aiInsight" style="display:none;"></div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">📈 Vitals History</div>
+            <div id="vitalsHistory"><div class="empty-msg">No vitals logged yet. Add above! 💉</div></div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">🗓 Appointment Timeline</div>
+            <div class="timeline">
+                {% if appointments %}
+                    {% for appt in appointments %}
+                    <div class="tl-item">
+                        <div class="tl-dot"></div>
+                        <div class="tl-date">{{ appt[3] }} · {{ appt[4] }}</div>
+                        <div class="tl-content">
+                            <div class="tl-title">{{ appt[2] }}</div>
+                            <div class="tl-sub">{{ appt[5] }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-msg">No appointments yet.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- HOSPITALS TAB -->
+    <div id="tab-hospitals" style="display:none;">
+        <div class="emergency-banner">
+            <div>
+                <div class="emer-text">🚨 Medical Emergency?</div>
+                <div style="font-size:12px;opacity:0.85;margin-top:2px;">Call ambulance immediately</div>
+            </div>
+            <div class="emer-num">📞 108</div>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" id="cityInput" placeholder="Enter city or area (e.g. Pune, Mumbai)">
+            <button class="search-btn" onclick="searchHospitals()">🔍 Search</button>
+            <button class="search-btn" style="background:#0a1931;" onclick="useMyLocation()">📍 Near Me</button>
+        </div>
+
+        <div class="filter-row">
+            <div class="filter-chip active" onclick="setFilter('all', this)">All</div>
+            <div class="filter-chip" onclick="setFilter('government', this)">Government</div>
+            <div class="filter-chip" onclick="setFilter('private', this)">Private</div>
+            <div class="filter-chip" onclick="setFilter('emergency', this)">24/7 Emergency</div>
+            <div class="filter-chip" onclick="setFilter('specialty', this)">Specialty</div>
+        </div>
+
+        <div class="hospital-list" id="hospitalList">
+            <div class="locating-msg">🔍 Enter a city or click "Near Me" to find hospitals</div>
+        </div>
+    </div>
+</div>
+
+<footer><p>© 2026 VitaCure. All rights reserved.</p></footer>
+
+<script>
+function toggleDark() {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('dark', document.body.classList.contains('dark-mode'));
+}
+if (localStorage.getItem('dark') === 'true') document.body.classList.add('dark-mode');
+
+function showTab(name) {
+    document.getElementById('tab-dashboard').style.display = name === 'dashboard' ? 'block' : 'none';
+    document.getElementById('tab-hospitals').style.display = name === 'hospitals' ? 'block' : 'none';
+    document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        b.classList.toggle('active', ['dashboard', 'hospitals'][i] === name);
+    });
+}
+
+function loadVitals() { return JSON.parse(localStorage.getItem('vc_vitals') || '[]'); }
+function saveToLS(data) { localStorage.setItem('vc_vitals', JSON.stringify(data)); }
+
+function saveVitals() {
+    const bp     = document.getElementById('v-bp').value.trim();
+    const weight = document.getElementById('v-weight').value;
+    const sugar  = document.getElementById('v-sugar').value;
+    const heart  = document.getElementById('v-heart').value;
+    const temp   = document.getElementById('v-temp').value;
+    const spo2   = document.getElementById('v-spo2').value;
+    if (!bp && !weight && !sugar) { alert('Please fill at least BP, Weight, or Blood Sugar!'); return; }
+    const now = new Date();
+    const record = {
+        id: Date.now(),
+        date: now.toLocaleDateString('en-IN'),
+        time: now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+        bp, weight, sugar, heart, temp, spo2
+    };
+    const all = loadVitals();
+    all.unshift(record);
+    saveToLS(all);
+    ['v-bp','v-weight','v-sugar','v-heart','v-temp','v-spo2'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('saveMsg').textContent = '✅ Saved!';
+    setTimeout(() => document.getElementById('saveMsg').textContent = '', 2000);
+    renderVitalsHistory();
+    updateStats();
+}
+
+function renderVitalsHistory() {
+    const container = document.getElementById('vitalsHistory');
+    const all = loadVitals();
+    if (all.length === 0) { container.innerHTML = '<div class="empty-msg">No vitals logged yet. Add above! 💉</div>'; return; }
+    container.innerHTML = `<div style="overflow-x:auto;"><table class="vitals-table">
+        <thead><tr><th>Date</th><th>BP</th><th>Weight</th><th>Sugar</th><th>Heart Rate</th><th>Temp</th><th>SpO2</th></tr></thead>
+        <tbody>${all.slice(0,10).map(r => `<tr>
+            <td>${r.date}<br><span style="font-size:11px;color:#aaa">${r.time}</span></td>
+            <td>${r.bp ? `<span class="${bpClass(r.bp)}">${r.bp}</span>` : '—'}</td>
+            <td>${r.weight ? r.weight + ' kg' : '—'}</td>
+            <td>${r.sugar ? `<span class="${sugarClass(r.sugar)}">${r.sugar} mg/dL</span>` : '—'}</td>
+            <td>${r.heart ? r.heart + ' bpm' : '—'}</td>
+            <td>${r.temp  ? r.temp  + ' °C'  : '—'}</td>
+            <td>${r.spo2  ? `<span class="${spo2Class(r.spo2)}">${r.spo2}%</span>` : '—'}</td>
+        </tr>`).join('')}</tbody>
+    </table></div>`;
+}
+
+function bpClass(bp) { const s = parseInt(bp.split('/')[0]); if (s < 90 || s > 140) return 'danger'; if (s > 120) return 'warning'; return 'normal'; }
+function sugarClass(s) { const v = parseInt(s); if (v < 70 || v > 140) return 'danger'; if (v > 100) return 'warning'; return 'normal'; }
+function spo2Class(s) { return parseInt(s) < 95 ? 'danger' : 'normal'; }
+
+function updateStats() {
+    const all  = loadVitals();
+    const meds = JSON.parse(localStorage.getItem('vc_medicines') || '[]');
+    document.getElementById('statMeds').textContent = meds.length;
+    if (all.length > 0) {
+        const l = all[0];
+        if (l.bp)     { document.getElementById('statBP').textContent     = l.bp;     document.getElementById('bpStatus').textContent    = 'Latest'; }
+        if (l.weight) { document.getElementById('statWeight').textContent  = l.weight; document.getElementById('wtStatus').textContent    = 'kg'; }
+        if (l.sugar)  { document.getElementById('statSugar').textContent   = l.sugar;  document.getElementById('sugarStatus').textContent = 'mg/dL'; }
+    }
+}
+
+async function getAIInsight() {
+    const all = loadVitals();
+    const box = document.getElementById('aiInsight');
+    box.style.display = 'block';
+    box.textContent = '⏳ Analyzing your health data...';
+    const latest = all[0] || {};
+    try {
+        const res  = await fetch('/api/health_insight', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ vitals: latest, total_records: all.length }) });
+        const data = await res.json();
+        box.textContent = data.insight;
+    } catch(e) {
+        box.textContent = 'Could not fetch insight. Try again.';
+    }
+}
+
+// ── HOSPITAL FINDER ────────────────────────────────────────────
+let allHospitals = [];
+let activeFilter = 'all';
+
+function setFilter(type, el) {
+    activeFilter = type;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderHospitals();
+}
+
+async function searchHospitals() {
+    const city = document.getElementById('cityInput').value.trim();
+    if (!city) { alert('Please enter a city name!'); return; }
+    document.getElementById('hospitalList').innerHTML = '<div class="locating-msg">⏳ Finding hospitals near ' + city + '...</div>';
+    await fetchHospitalsAI(city + ', India');
+}
+
+async function useMyLocation() {
+    const list = document.getElementById('hospitalList');
+    list.innerHTML = '<div class="locating-msg">📍 Detecting your location...</div>';
+    try {
+        const res  = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        const area = [data.city, data.region].filter(Boolean).join(', ');
+        document.getElementById('cityInput').value = area;
+        list.innerHTML = `<div class="locating-msg">🔍 Finding hospitals near ${area}...</div>`;
+        await fetchHospitalsAI(area + ', India');
+    } catch {
+        list.innerHTML = '<div class="locating-msg">❌ Could not detect location. Please type your city above.</div>';
+    }
+}
+
+async function fetchHospitalsAI(location) {
+    try {
+        const res  = await fetch('/api/nearby_hospitals', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location }) });
+        const data = await res.json();
+        allHospitals = data.hospitals || [];
+        renderHospitals();
+    } catch(e) {
+        document.getElementById('hospitalList').innerHTML = '<div class="locating-msg">❌ Could not fetch hospitals. Try again.</div>';
+    }
+}
+
+function renderHospitals() {
+    const list = document.getElementById('hospitalList');
+    let filtered = allHospitals;
+    if (activeFilter !== 'all') {
+        filtered = allHospitals.filter(h => {
+            const type = (h.type || '').toLowerCase();
+            const name = (h.name || '').toLowerCase();
+            if (activeFilter === 'government') return type.includes('government') || name.includes('government') || type.includes('govt') || name.includes('civil');
+            if (activeFilter === 'private')    return type.includes('private');
+            if (activeFilter === 'emergency')  return h.emergency === true || h.emergency === 'true' || type.includes('emergency');
+            if (activeFilter === 'specialty')  return type.includes('specialty') || type.includes('speciality') || type.includes('super');
+            return true;
+        });
+    }
+    if (filtered.length === 0) { list.innerHTML = '<div class="locating-msg">No hospitals found for this filter. Try "All".</div>'; return; }
+    list.innerHTML = filtered.map(h => `
+        <div class="hospital-card">
+            <div style="flex:1;">
+                <div class="h-name">🏥 ${h.name}</div>
+                <div class="h-type">${h.type || 'Hospital'}</div>
+                <div class="h-meta">📍 ${h.address} &nbsp;·&nbsp; ⭐ ${h.rating || 'N/A'}</div>
+                <div class="h-meta">🕐 ${h.hours || 'Hours not available'}</div>
+                ${h.phone ? `<a class="call-btn" href="tel:${h.phone}">📞 Call ${h.phone}</a>` : ''}
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+                <div class="h-dist">${h.distance || ''}</div>
+                <div class="h-open ${h.open ? 'open-yes' : 'open-no'}" style="margin-top:6px;">${h.open ? '✅ Open Now' : '❌ Closed'}</div>
+                ${h.emergency ? '<div style="margin-top:6px;font-size:12px;background:#ffe0e0;color:#c0392b;padding:3px 10px;border-radius:12px;font-weight:600;">🚨 Emergency</div>' : ''}
+            </div>
+        </div>`).join('');
+}
+
+updateStats();
+renderVitalsHistory();
+if (window.location.hash === '#hospitals') showTab('hospitals');
+</script>
+</body>
+</html>

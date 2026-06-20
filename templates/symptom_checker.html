@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VitaCure - Symptom Checker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav>
+    <h1>VitaCure</h1>
+    <div>
+        <a href="/patient">Dashboard</a>
+        <a href="/history">History</a>
+        <a href="/booking">Book Appointment</a>
+        <a href="/logout">Logout</a>
+        <button class="dark-toggle" onclick="toggleDark()">🌙 Dark</button>
+    </div>
+</nav>
+
+<div class="dashboard">
+
+    <div class="dashboard-header">
+        <div>
+            <h2>🤖 AI Symptom Checker</h2>
+            <p>Describe your symptoms and get AI-based health insights.</p>
+        </div>
+    </div>
+
+    {% if error %}
+        <div class="appointment-card" style="border-left: 4px solid red;">
+            <p style="color: red;">{{ error }}</p>
+        </div>
+    {% endif %}
+
+    <div class="appointment-card">
+        <form method="POST">
+            <label for="symptoms"><strong>Enter your symptoms</strong></label><br><br>
+            <textarea name="symptoms" id="symptoms" rows="4" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;"
+                placeholder="e.g. fever, headache, sore throat for 2 days" required></textarea>
+            <br><br>
+            <button type="submit" class="btn-primary" style="padding: 12px 28px; border-radius: 10px; background: var(--teal-light); color: white; font-weight: 600; border: none; cursor: pointer;">Analyze Symptoms</button>
+        </form>
+    </div>
+
+    {% if result %}
+    <div class="appointment-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3>📋 AI Analysis</h3>
+            {% if history_id %}
+            <a href="/download_report/{{ history_id }}" style="background: var(--teal); color: white; padding: 8px 18px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600;">⬇ Download PDF</a>
+            {% endif %}
+        </div>
+        <pre style="white-space: pre-wrap; font-family: inherit;">{{ result }}</pre>
+    </div>
+    {% endif %}
+
+    <div class="appointment-card" style="background: #fff8e1;">
+        <p>⚠️ This is AI-generated information, not a substitute for professional medical advice.</p>
+    </div>
+
+</div>
+<script>
+function toggleDark() {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('dark', document.body.classList.contains('dark-mode'));
+}
+if (localStorage.getItem('dark') === 'true') document.body.classList.add('dark-mode');
+</script>
+<footer>
+    <p>© 2026 VitaCure. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>VitaCure - Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav>
+    <h1>VitaCure</h1>
+    <div>
+        <a href="/">Home</a>
+        <a href="/login">Login</a>
+        <button class="dark-toggle" onclick="toggleDark()">🌙 Dark</button>
+    </div>
+</nav>
+
+<div style="min-height: 90vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0a1931 0%, #0d3b5e 50%, #008080 100%); padding: 40px 20px;">
+    <div class="form-container">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div style="font-size: 52px; margin-bottom: 10px;">✨</div>
+            <h2>Create Account</h2>
+            <p class="form-subtitle">Join VitaCure for better healthcare</p>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-error">⚠️ {{ messages[0] }}</div>
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="/register">
+            <input type="text" id="name" name="name" placeholder="👤 Full Name" required>
+            <p class="field-msg" id="name-msg"></p>
+
+            <input type="email" id="email" name="email" placeholder="📧 Email Address" required>
+            <p class="field-msg" id="email-msg"></p>
+
+            <input type="password" id="password" name="password" placeholder="🔒 Password" required>
+            <p class="field-msg" id="pass-msg"></p>
+
+            <select id="role" name="role" required>
+                <option value="">🏥 Select Your Role</option>
+                <option value="patient">👤 Patient</option>
+                <option value="doctor">🩺 Doctor</option>
+            </select>
+            <p class="field-msg" id="role-msg"></p>
+
+            <button type="submit" id="register-btn" disabled>Create My Account</button>
+        </form>
+
+        <div class="form-footer">
+            Already have an account? <a href="/login">Login here</a>
+        </div>
+
+        <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center;">
+                <div style="font-size: 13px; color: #777;">
+                    <div style="font-size: 22px;">🔒</div>
+                    Secure
+                </div>
+                <div style="font-size: 13px; color: #777;">
+                    <div style="font-size: 22px;">⚡</div>
+                    Fast
+                </div>
+                <div style="font-size: 13px; color: #777;">
+                    <div style="font-size: 22px;">🆓</div>
+                    Free
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>© 2026 VitaCure. All rights reserved.</p>
+</footer>
+<script>
+function toggleDark() {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('dark', document.body.classList.contains('dark-mode'));
+}
+if (localStorage.getItem('dark') === 'true') document.body.classList.add('dark-mode');
+</script>
+<script src="{{ url_for('static', filename='js/register.js') }}"></script>
+</body>
+</html>
