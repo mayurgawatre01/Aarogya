@@ -3,26 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>VitaCure - Register</title>
+    <title>ArogyaAI - Register</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
 
-<nav>
-    <h1>VitaCure</h1>
-    <div>
-        <a href="/">Home</a>
-        <a href="/login">Login</a>
-        <button class="dark-toggle" onclick="toggleDark()">🌙 Dark</button>
+<!-- STICKY NAVBAR -->
+<nav class="landing-nav glass">
+    <a href="/" class="logo-container">
+        <span class="logo-icon">🩺</span>
+        <span class="logo-text">Arogya<span>AI</span></span>
+    </a>
+    <div class="nav-actions">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/login" class="nav-link">Login</a>
+        <button class="dark-toggle" onclick="toggleDark()">🌙</button>
     </div>
 </nav>
 
-<div style="min-height: 90vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0a1931 0%, #0d3b5e 50%, #008080 100%); padding: 40px 20px;">
-    <div class="form-container">
-        <div style="text-align: center; margin-bottom: 30px;">
-            <div style="font-size: 52px; margin-bottom: 10px;">✨</div>
+<!-- REGISTER BOX -->
+<div class="auth-wrapper">
+    <div class="form-container glass animate-fade-in-up">
+        <div class="form-header">
+            <div style="font-size: 40px; margin-bottom: 12px; display: inline-block;">✨</div>
             <h2>Create Account</h2>
-            <p class="form-subtitle">Join VitaCure for better healthcare</p>
+            <p class="form-subtitle">Join ArogyaAI for advanced healthcare solutions</p>
         </div>
 
         {% with messages = get_flashed_messages() %}
@@ -32,58 +37,110 @@
         {% endwith %}
 
         <form method="POST" action="/register">
-            <input type="text" id="name" name="name" placeholder="👤 Full Name" required>
-            <p class="field-msg" id="name-msg"></p>
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" placeholder="John Doe" required autocomplete="name">
+                <div class="field-msg" id="name-msg"></div>
+            </div>
 
-            <input type="email" id="email" name="email" placeholder="📧 Email Address" required>
-            <p class="field-msg" id="email-msg"></p>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="email@example.com" required autocomplete="email">
+                <div class="field-msg" id="email-msg"></div>
+            </div>
 
-            <input type="password" id="password" name="password" placeholder="🔒 Password" required>
-            <p class="field-msg" id="pass-msg"></p>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="new-password">
+                <div class="field-msg" id="pass-msg"></div>
+            </div>
 
-            <select id="role" name="role" required>
-                <option value="">🏥 Select Your Role</option>
-                <option value="patient">👤 Patient</option>
-                <option value="doctor">🩺 Doctor</option>
-            </select>
-            <p class="field-msg" id="role-msg"></p>
+            <div class="form-group">
+                <label for="role">Select Your Role</label>
+                <select id="role" name="role" required>
+                    <option value="">-- Choose Role --</option>
+                    <option value="patient">👤 Patient</option>
+                    <option value="doctor">🩺 Doctor</option>
+                </select>
+                <div class="field-msg" id="role-msg"></div>
+            </div>
 
-            <button type="submit" id="register-btn" disabled>Create My Account</button>
+            <button type="submit" id="register-btn" class="btn-primary form-submit-btn" disabled>Create Account</button>
         </form>
 
         <div class="form-footer">
             Already have an account? <a href="/login">Login here</a>
         </div>
-
-        <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center;">
-                <div style="font-size: 13px; color: #777;">
-                    <div style="font-size: 22px;">🔒</div>
-                    Secure
-                </div>
-                <div style="font-size: 13px; color: #777;">
-                    <div style="font-size: 22px;">⚡</div>
-                    Fast
-                </div>
-                <div style="font-size: 13px; color: #777;">
-                    <div style="font-size: 22px;">🆓</div>
-                    Free
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
-<footer>
-    <p>© 2026 VitaCure. All rights reserved.</p>
-</footer>
 <script>
 function toggleDark() {
     document.body.classList.toggle('dark-mode');
-    localStorage.setItem('dark', document.body.classList.contains('dark-mode'));
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('dark', isDark);
+    document.querySelector('.dark-toggle').textContent = isDark ? '☀️' : '🌙';
 }
-if (localStorage.getItem('dark') === 'true') document.body.classList.add('dark-mode');
+if (localStorage.getItem('dark') === 'true') {
+    document.body.classList.add('dark-mode');
+    document.querySelector('.dark-toggle').textContent = '☀️';
+}
 </script>
 <script src="{{ url_for('static', filename='js/register.js') }}"></script>
+<script>
+// Clerk Authentication Loader
+const CLERK_PUBLISHABLE_KEY = "{{ clerk_pub_key }}";
+
+if (CLERK_PUBLISHABLE_KEY && CLERK_PUBLISHABLE_KEY !== "None" && CLERK_PUBLISHABLE_KEY.trim() !== "") {
+    // Hide native elements
+    const nativeForm = document.querySelector('form');
+    if (nativeForm) nativeForm.style.display = 'none';
+    const formFooter = document.querySelector('.form-footer');
+    if (formFooter) formFooter.style.display = 'none';
+    const headerTitle = document.querySelector('.form-header p');
+    if (headerTitle) headerTitle.textContent = "Register securely via Clerk";
+
+    // Create Clerk mounting div
+    const mountDiv = document.createElement('div');
+    mountDiv.id = 'clerk-signup-mount';
+    mountDiv.style.marginTop = '20px';
+    document.querySelector('.form-container').appendChild(mountDiv);
+
+    // Load Clerk CDN SDK
+    const script = document.createElement('script');
+    script.setAttribute('data-clerk-publishable-key', CLERK_PUBLISHABLE_KEY);
+    script.src = "https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js";
+    script.crossOrigin = "anonymous";
+    script.async = true;
+
+    script.onload = async () => {
+        await window.Clerk.load();
+        if (window.Clerk.user) {
+            // User registered and verified. Synchronize details with Flask session
+            const email = window.Clerk.user.primaryEmailAddress.emailAddress;
+            const name = window.Clerk.user.fullName;
+
+            const res = await fetch('/api/auth/clerk', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, name })
+            });
+            const data = await res.json();
+            if (data.success) {
+                window.location.href = data.redirect;
+            } else {
+                alert("Auth synchronization failed: " + data.error);
+            }
+        } else {
+            // Mount Clerk Sign Up UI
+            window.Clerk.mountSignUp(document.getElementById('clerk-signup-mount'), {
+                afterSignInUrl: window.location.href,
+                afterSignUpUrl: window.location.href
+            });
+        }
+    };
+    document.body.appendChild(script);
+}
+</script>
 </body>
 </html>

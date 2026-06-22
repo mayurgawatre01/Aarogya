@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ArogyaAI - Doctor Population Summary</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="dashboard-container">
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="dashboard-sidebar glass" id="sidebar">
+        <div class="sidebar-header">
+            <a href="/" class="logo-container">
+                <span class="logo-icon">🩺</span>
+                <span class="logo-text">Arogya<span>AI</span></span>
+            </a>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li>
+                <a href="/doctor" class="sidebar-item">
+                    <span class="icon">👨‍⚕️</span> Patient Visits
+                </a>
+            </li>
+            <li>
+                <a href="/doctor_ai_summary" class="sidebar-item active">
+                    <span class="icon">🧠</span> AI Health Summary
+                </a>
+            </li>
+        </ul>
+        
+        <div class="sidebar-footer">
+            <a href="/logout" class="sidebar-item" style="color: var(--danger-text); border-color: transparent;">
+                <span class="icon">🚪</span> Logout
+            </a>
+        </div>
+    </aside>
+    
+    <!-- MAIN CONTENT VIEW -->
+    <main class="dashboard-content">
+        
+        <!-- HEADER -->
+        <header class="dashboard-header">
+            <div class="dashboard-header-title">
+                <h2>Clinical Population Analysis</h2>
+                <p>AI-synthesized diagnostic analysis of recent patient symptom trends.</p>
+            </div>
+            
+            <div style="display: flex; gap: 14px; align-items: center;">
+                <button class="dark-toggle" onclick="toggleDark()">🌙</button>
+                <a href="/doctor" class="btn-outline" style="padding: 8px 16px; font-size: 13px;">◀ Back to Visits</a>
+            </div>
+        </header>
+
+        <!-- AI SUMMARY CARD -->
+        <div class="premium-card glass" style="margin-bottom: 30px; border-left: 5px solid var(--primary);">
+            <div class="premium-card-title">
+                <span>🧠 AI Trend Summary (Latest 20 Cases)</span>
+                <span class="card-header-icon">✨</span>
+            </div>
+            <div style="font-size: 15px; line-height: 1.7; color: var(--text); white-space: pre-wrap;">
+                {% if summary %}
+                    {{ summary }}
+                {% else %}
+                    No patient records available to synthesize trends.
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- RECENT PATIENT ENTRIES -->
+        <div class="premium-card glass">
+            <div class="premium-card-title">
+                <span>📋 Patients Diagnosed Symptom Feed</span>
+            </div>
+
+            {% if records %}
+                <div style="overflow-x: auto;">
+                    <table class="vitals-table">
+                        <thead>
+                            <tr>
+                                <th>Patient Name</th>
+                                <th>Symptoms Reported</th>
+                                <th>AI Diagnosis Advice</th>
+                                <th>Logged Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in records %}
+                            <tr>
+                                <td><strong>{{ record[0] }}</strong></td>
+                                <td>{{ record[1] }}</td>
+                                <td style="font-size: 12px; color: var(--text-muted); max-width: 320px; white-space: pre-wrap;">{{ record[2] }}</td>
+                                <td>{{ record[3] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    <p>No recent symptom checks logged by patients.</p>
+                </div>
+            {% endif %}
+        </div>
+
+    </main>
+</div>
+
+<script>
+function toggleDark() {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('dark', document.body.classList.contains('dark-mode'));
+}
+if (localStorage.getItem('dark') === 'true') {
+    document.body.classList.add('dark-mode');
+}
+</script>
+
+</body>
+</html>
